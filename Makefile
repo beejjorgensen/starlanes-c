@@ -7,13 +7,13 @@ DESTDIR=
 
 CCOPTS=-Wall -Wextra
 
-TARGET=starlanesb
+TARGET=starlanes
 
 .PHONY: all clean pristine
 
 all: $(TARGET)
 
-$(TARGET): starlanesb.c
+$(TARGET): starlanes.c
 	$(CC) $(CCOPTS) -o $@ $^ -l$(CURSESLIB)
 
 install:

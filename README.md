@@ -19,14 +19,13 @@ You can override the following macros:
 * `prefix=/usr`: where things are installed relative to root.
 * `DESTDIR`: if you want to set another "root" for the install.
 
-## License
+## AI Version 1.3.0
 
-This was GPL2, but I've changed it to the
-[Unlicense](https://unlicense.org/). I believe other people have added
-onto the GPL version, but this one (v1.2.2) was entirely written by me
-back in the day.
-
-Enjoy!
+David Barnsdale wrote an AI for this thing and released it as
+[1.3.0](https://web.archive.org/web/20190701060458/https://www.barnsdle.demon.co.uk/game/starlanes.html).
+But I'm having trouble getting that to run without crashing. So I've
+forged ahead with modernizing the working one, and we'll see about
+backporting the AI into it later.
 
 ---
 
