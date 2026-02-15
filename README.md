@@ -22,7 +22,11 @@ You can override the following macros:
 ## License
 
 This was GPL2, but I've changed it to the
-[Unlicense](https://unlicense.org/). Enjoy!
+[Unlicense](https://unlicense.org/). I believe other people have added
+onto the GPL version, but this one (v1.2.2) was entirely written by me
+back in the day.
+
+Enjoy!
 
 ---
 
