@@ -151,7 +151,7 @@ void usage(void);
 
 // Global variables
 
-char *VERSION = "1.2.3";
+char *VERSION = "1.4.0";
 
 int MAPX = 12;                  // X dimension of map
 int MAPY = 10;                  // Y dimension of map
