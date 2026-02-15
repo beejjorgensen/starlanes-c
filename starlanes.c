@@ -16,6 +16,7 @@
 #include "company.h"
 #include "player.h"
 #include "ui.h"
+#include "map.h"
 
 // Macros to look at surrounding spaces on the map
 
@@ -31,10 +32,7 @@
 // Function prototypes
 
 void initialize(void);
-void color_setup(void);
 void get_num_players(void);
-void showmap(void);
-void drawmap(int loc, char c);
 int get_move(void);
 void do_move(int move);
 void do_merge(int *c1, int *c2, int *o1, int *o2);
@@ -170,27 +168,6 @@ void initialize(void)
 }
 
 /**
- * Sets up the color pairs
- */
-void color_setup(void)
-{
-    init_pair(1, COLOR_BLUE, COLOR_BLACK);
-    init_pair(2, COLOR_RED, COLOR_BLACK);
-    init_pair(3, COLOR_GREEN, COLOR_BLACK);
-    init_pair(4, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
-    init_pair(6, COLOR_CYAN, COLOR_BLACK);
-    init_pair(7, COLOR_WHITE, COLOR_BLACK);
-    init_pair(8, COLOR_YELLOW, COLOR_BLUE);
-    init_pair(9, COLOR_WHITE, COLOR_BLUE);
-    init_pair(10, COLOR_BLACK, COLOR_YELLOW);
-    init_pair(11, COLOR_BLACK, COLOR_WHITE);
-    init_pair(12, COLOR_BLACK, COLOR_RED);
-    init_pair(13, COLOR_BLACK, COLOR_BLUE);
-    init_pair(14, COLOR_BLACK, COLOR_GREEN);
-}
-
-/**
  * Prompts for the number of players
  */
 void get_num_players(void)
@@ -244,106 +221,6 @@ void get_num_players(void)
     delwin(npwin);
     clear();
     refresh();
-}
-
-
-/**
- * Draws the map in the map window
- */
-void showmap(void)
-{
-    int i, j, attrs;
-
-    wattron(mapwin, MAP_BORDER);
-    box(mapwin, '|', '-');
-    wattroff(mapwin, MAP_BORDER);
-
-    wattron(mapwin, MAP_TITLE);
-    center(mapwin, MAPX * 3 + 2, 0, " Map ");
-    wattroff(mapwin, MAP_TITLE);
-
-    for (i = 0; i < MAPY; i++)
-        for (j = 0; j < MAPX; j++) {
-            switch (map[j + i * MAPX]) {
-            case SPACE:
-                attrs = MAP_SPACE;
-                break;
-            case STAR:
-                attrs = MAP_STAR;
-                break;
-            case NEWCO:
-                attrs = MAP_NEWCO;
-                break;
-            case BLACKHOLE:
-                attrs = MAP_BLACKHOLE;
-                break;
-            case 'A':
-                attrs = CO_A;
-                break;
-            case 'B':
-                attrs = CO_B;
-                break;
-            case 'C':
-                attrs = CO_C;
-                break;
-            case 'D':
-                attrs = CO_D;
-                break;
-            case 'E':
-                attrs = CO_E;
-                break;
-            default:
-                attrs = A_NORMAL;
-            }
-            wattron(mapwin, attrs);
-            mvwaddch(mapwin, i + 1, j * 3 + 2, map[j + i * MAPX]);
-            wattroff(mapwin, attrs);
-        }
-
-    wnoutrefresh(mapwin);
-}
-
-/**
- * Puts items on the map
- */
-void drawmap(int loc, char c)
-{
-    int attrs;
-
-    switch (c) {
-    case SPACE:
-        attrs = MAP_SPACE;
-        break;
-    case STAR:
-        attrs = MAP_STAR;
-        break;
-    case NEWCO:
-        attrs = MAP_NEWCO;
-        break;
-    case BLACKHOLE:
-        attrs = MAP_BLACKHOLE;
-        break;
-    case 'A':
-        attrs = CO_A;
-        break;
-    case 'B':
-        attrs = CO_B;
-        break;
-    case 'C':
-        attrs = CO_C;
-        break;
-    case 'D':
-        attrs = CO_D;
-        break;
-    case 'E':
-        attrs = CO_E;
-        break;
-    default:
-        attrs = A_NORMAL;
-    }
-    wattron(mapwin, attrs);
-    mvwaddch(mapwin, loc / MAPX + 1, (loc % MAPX) * 3 + 2, c);
-    wattroff(mapwin, attrs);
 }
 
 /**

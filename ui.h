@@ -7,6 +7,7 @@
 #include <termios.h>
 #endif
 
+void color_setup(void);
 void center(WINDOW * win, int width, int row, char *s);
 
 #endif
