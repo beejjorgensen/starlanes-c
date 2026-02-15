@@ -10,4 +10,6 @@ typedef struct {
     int cash;
 } PLAYER;
 
+void holding_bonus(void);
+
 #endif
