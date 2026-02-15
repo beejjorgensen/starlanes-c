@@ -15,6 +15,11 @@ Build steps:
 * Run `./conf` to configure.
 * Run `make` to build.
 
+Clean steps:
+
+* `make clean` to remove intermediate build products.
+* `make pristine` to remove all build products.
+
 ## Installation
 
 You can set a prefix with:
