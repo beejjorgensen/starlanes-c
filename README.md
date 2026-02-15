@@ -56,6 +56,12 @@ backporting the AI into it later.
 
 This one is based on 1.2.2.
 
+## TODO
+
+* Fix resizing; at least make it not awful.
+* ^C should work everywhere.
+* Bot players
+
 ---
 
 beej@beej.us
