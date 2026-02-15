@@ -203,8 +203,13 @@ mandir=$MANDIR
 EOF
 
 cat <<EOF > conf.h
+#ifndef CONF_H
+#define CONF_H
+
 /* Computer-generated. Do not edit. */
 
-#define CURSES_H <$curses_h>
+#define CURSES_HEADER <$curses_h>
 ${termios}
+
+#endif
 EOF

@@ -4,6 +4,9 @@ DESTDIR=
 CCOPTS=-Wall -Wextra
 TARGET=starlanes
 
+SRCS=$(wildcard *.c)
+HEADERS=$(wildcard *.h)
+
 .PHONY: all clean pristine
 
 BINDIR=$(DESTDIR)$(prefix)/bin
@@ -11,8 +14,8 @@ MANDIR=$(DESTDIR)$(mandir)
 
 all: $(TARGET)
 
-$(TARGET): starlanes.c
-	$(CC) $(CCOPTS) -o $@ $^ -l$(CURSES_LIBRARY)
+$(TARGET): $(SRCS) $(HEADERS)
+	$(CC) $(CCOPTS) -o $@ $(SRCS) -l$(CURSES_LIBRARY)
 
 install:
 	install -d $(BINDIR)

@@ -5,88 +5,17 @@
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
-#include CURSES_H
+#include CURSES_HEADER
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
 
-// Color stuff
-
-#define BLUE_ON_BLACK COLOR_PAIR(1)
-#define RED_ON_BLACK COLOR_PAIR(2)
-#define GREEN_ON_BLACK COLOR_PAIR(3)
-#define YELLOW_ON_BLACK COLOR_PAIR(4)
-#define MAGENTA_ON_BLACK COLOR_PAIR(5)
-#define CYAN_ON_BLACK COLOR_PAIR(6)
-#define WHITE_ON_BLACK COLOR_PAIR(7)
-#define YELLOW_ON_BLUE COLOR_PAIR(8)
-#define WHITE_ON_BLUE COLOR_PAIR(9)
-#define BLACK_ON_YELLOW COLOR_PAIR(10)
-#define BLACK_ON_WHITE COLOR_PAIR(11)
-#define BLACK_ON_RED COLOR_PAIR(12)
-#define BLACK_ON_BLUE COLOR_PAIR(13)
-#define BLACK_ON_GREEN COLOR_PAIR(14)
-
-#define MAP_TITLE (color?(BLACK_ON_WHITE):(A_REVERSE))
-#define MAP_BORDER (color?(WHITE_ON_BLACK|A_BOLD):(A_BOLD))
-#define MAP_SPACE (color?(WHITE_ON_BLACK):(A_NORMAL))
-#define MAP_STAR (color?(YELLOW_ON_BLACK|A_BOLD):(A_BOLD))
-#define MAP_NEWCO (color?(CYAN_ON_BLACK):(A_NORMAL))
-#define MAP_BLACKHOLE (A_NORMAL)
-#define CO_A (color?(BLUE_ON_BLACK|A_BOLD):(A_NORMAL))
-#define CO_B (color?(GREEN_ON_BLACK):(A_NORMAL))
-#define CO_C (color?(YELLOW_ON_BLACK):(A_NORMAL))
-#define CO_D (color?(RED_ON_BLACK):(A_NORMAL))
-#define CO_E (color?(MAGENTA_ON_BLACK):(A_NORMAL))
-
-#define GENERAL_TITLE (color?(WHITE_ON_BLUE|A_BOLD):(A_REVERSE))
-#define GENERAL_TITLE_BLINK (color?(WHITE_ON_BLUE|A_BOLD|A_BLINK):(A_REVERSE|A_BLINK))
-#define GENERAL_BORDER (color?(BLUE_ON_BLACK):(A_NORMAL))
-#define GENERAL_TEXT (A_NORMAL)
-
-#define COINFO_TITLE (color?(BLACK_ON_GREEN):(A_REVERSE))
-#define COINFO_TEXT (A_BOLD)
-
-#define STAND_TITLE (color?(YELLOW_ON_BLUE|A_BOLD):(A_REVERSE))
-#define STAND_BORDER (color?(BLUE_ON_BLACK):(A_BOLD))
-#define STAND_HEADER (color?(WHITE_ON_BLUE):(A_REVERSE))
-
-#define MORE_COINFO_TITLE (color?(YELLOW_ON_BLUE|A_BOLD):(A_REVERSE))
-#define MORE_COINFO_BORDER (color?(BLUE_ON_BLACK):(A_BOLD))
-#define MORE_COINFO_HEADER (color?(WHITE_ON_BLUE):(A_REVERSE))
-
-#define QUIT_TITLE (color?(BLACK_ON_RED):(A_REVERSE))
-#define QUIT_BORDER (color?(RED_ON_BLACK):(A_BOLD))
-#define QUIT_TEXT (color?(YELLOW_ON_BLACK|A_BOLD):(A_NORMAL))
-
-// Misc stuff
-
-#define SPACE '.'               // Space character
-#define NEWCO '+'               // New company character
-#define STAR '*'                // Star character
-#define BLACKHOLE '@'           // Black hole character
-#define NUMCO 5                 // Number of companies (don't change)
-#define INIT_CO_COST 100        // Initial company start cost
-#define INIT_CASH 6000          // Initial player cash
-#define SPLIT_PRICE 3000        // When stocks split 2-1
-#define FOUNDER_BONUS 5         // Founder gets this much stock
-#define STARCOST 500            // Company's price increase near star
-#define BLACKHOLECOST -500      // Price increase near black hole
-#define NEWCOCOST 100           // Company's price increase near new co
-#define NUMMOVES 5              // Number of different moves a player gets
-#define MAXPLAYERS 4            // Total number of players a game can have
-#define END_PERCENT 54          // End when this much of the map is full
-#define DEF_LINES 25            // Default number of lines on screen
-#define DEF_COLUMNS 80          // Default number of columns on screen
-
-#define CR 13                   // Various keys
-#define LF 10
-#define BS 8
-#define DEL 127
-#define ESC 27
-#define CTRL_L 12
-#define CTRL_C 3
-#define CTRL_Z 26
+#include "globals.h"
+#include "colors.h"
+#include "consts.h"
+#include "company.h"
+#include "player.h"
+#include "ui.h"
 
 // Macros to look at surrounding spaces on the map
 
@@ -99,21 +28,6 @@
 #define co_near(move) (iscompany(up_obj(move))||iscompany(down_obj(move))||iscompany(left_obj(move))||iscompany(right_obj(move)))
 #define s_or_bh(c) ((c)==SPACE||(c)==BLACKHOLE)
 
-// Player and company structures
-
-typedef struct {
-    char name[100];
-    int holdings[NUMCO];
-    int svalue;                 // Stock value -- not always accurate!!
-    int cash;
-} PLAYER;
-
-typedef struct {
-    char name[100];
-    int price;
-    int size;
-} COMPANY;
-
 // Function prototypes
 
 void initialize(void);
@@ -122,8 +36,6 @@ void get_num_players(void);
 void showmap(void);
 void drawmap(int loc, char c);
 int get_move(void);
-void show_coinfo(void);
-void more_coinfo(void);
 void do_move(int move);
 void do_merge(int *c1, int *c2, int *o1, int *o2);
 void holding_bonus(void);
@@ -148,21 +60,6 @@ int order_compare(const void *v1, const void *v2);
 void quit_yn(void);
 void shutdown(void);
 void usage(void);
-
-// Global variables
-
-char *VERSION = "1.4.0";
-
-int MAPX = 12;                  // X dimension of map
-int MAPY = 10;                  // Y dimension of map
-int LINES;                      // Lines in screen
-int COLUMNS;                    // Columns in screen
-char *map;                      // Pointer to the map data
-PLAYER *pl;                     // Pointer to array of players
-COMPANY *co;                    // Pointer to array of companies
-int numplayers, turn;           // Number of players, whose turn it is
-WINDOW *mapwin, *general, *coinfo;      // Pointers to the windows
-int color;                      // True if we want color
 
 /**
  * Sets up the map, players, and companies
@@ -448,58 +345,6 @@ void drawmap(int loc, char c)
     wattron(mapwin, attrs);
     mvwaddch(mapwin, loc / MAPX + 1, (loc % MAPX) * 3 + 2, c);
     wattroff(mapwin, attrs);
-}
-
-/**
- * Draws the company info screen
- */
-void show_coinfo(void)
-{
-    int i, gotco = 0, attrs;
-
-    werase(coinfo);
-    wattron(coinfo, COINFO_TITLE);
-    mvwprintw(coinfo, 0, 0, " %-19s    %5s  %8s ", "Company", "Price",
-              "Holdings");
-    wattroff(coinfo, COINFO_TITLE);
-
-    wmove(coinfo, 2, 0);
-    for (i = 0; i < NUMCO; i++)
-        if (co[i].size) {
-            switch (i) {
-            case 0:
-                attrs = CO_A;
-                break;
-            case 1:
-                attrs = CO_B;
-                break;
-            case 2:
-                attrs = CO_C;
-                break;
-            case 3:
-                attrs = CO_D;
-                break;
-            case 4:
-                attrs = CO_E;
-                break;
-            }
-            wattron(coinfo, attrs);
-            wprintw(coinfo, " %-19s    ", co[i].name);
-            wattroff(coinfo, attrs);
-            wprintw(coinfo, "$%-4d   ", co[i].price);
-            //if (pl[turn].holdings[i] == 0) wattron(coinfo,A_BLINK);
-            wprintw(coinfo, "%-5d\n\n\r", pl[turn].holdings[i]);
-            //if (pl[turn].holdings[i] == 0) wattroff(coinfo,A_BLINK);
-            gotco = 1;
-        }
-
-    if (!gotco) {
-        wattron(coinfo, COINFO_TEXT);
-        wprintw(coinfo, " no active companies");
-        wattroff(coinfo, COINFO_TEXT);
-    }
-
-    wnoutrefresh(coinfo);
 }
 
 /**
@@ -1204,14 +1049,6 @@ void clear_general(char *s, int blink)
 }
 
 /**
- * Centers a piece of text on a window on the specified row.
- */
-void center(WINDOW *win, int width, int row, char *s)
-{
-    mvwaddstr(win, row, (width - strlen(s)) / 2, s);
-}
-
-/**
  * Does mywgetstr my way.
  */
 int my_mvwgetstr(WINDOW *win, int y, int x, int max, int num_only, char *s)
@@ -1371,88 +1208,6 @@ int order_compare(const void *v1, const void *v2)
     if (nw1 > nw2)
         return -1;
     return 0;
-}
-
-/**
- * Shows detailed company information.
- */
-void more_coinfo(void)
-{
-    WINDOW *more_coinfo;
-    int numco = 0, cos[NUMCO], i, j, attrs, total;
-
-    for (i = 0; i < NUMCO; i++) {       // Get list of active companies
-        if (co[i].size)
-            cos[numco++] = i;
-    }
-
-    if (numco == 0)
-        return;                 // Don't bother if there are no active co's
-
-    if ((more_coinfo =
-         newwin(7 + numco, 52, 5, (COLUMNS - 52) / 2)) == NULL) {
-        fprintf(stderr, "starlanes: couldn't create more_coinfo window\n");
-        exit(1);
-    }
-
-    wattron(more_coinfo, MORE_COINFO_BORDER);
-    box(more_coinfo, '|', '=');
-    wattroff(more_coinfo, MORE_COINFO_BORDER);
-
-    wattron(more_coinfo, MORE_COINFO_TITLE);
-    center(more_coinfo, 52, 0, " Detailed Company Information ");
-    wattroff(more_coinfo, MORE_COINFO_TITLE);
-
-    wattron(more_coinfo, MORE_COINFO_HEADER);
-    mvwaddstr(more_coinfo, 2, 1,
-              " Company name          Price   Size   Total Worth ");
-    wattroff(more_coinfo, MORE_COINFO_HEADER);
-
-
-    for (i = 0; i < numco; i++) {
-        switch (cos[i]) {
-        case 0:
-            attrs = CO_A;
-            break;
-        case 1:
-            attrs = CO_B;
-            break;
-        case 2:
-            attrs = CO_C;
-            break;
-        case 3:
-            attrs = CO_D;
-            break;
-        case 4:
-            attrs = CO_E;
-            break;
-        }
-
-        wattron(more_coinfo, attrs);
-        mvwprintw(more_coinfo, i + 4, 2, "%-20s  ", co[cos[i]].name);
-        wattroff(more_coinfo, attrs);
-        wprintw(more_coinfo, "$%-4d    ", co[cos[i]].price);
-        wprintw(more_coinfo, "%-3d    ", co[cos[i]].size);
-
-        for (j = total = 0; j < numplayers; j++)
-            total += co[cos[i]].price * pl[j].holdings[cos[i]];
-
-        wattron(more_coinfo, A_BOLD);
-        wprintw(more_coinfo, "$%-9d", total);
-        wattroff(more_coinfo, A_BOLD);
-    }
-
-    center(more_coinfo, 52, 5 + numco, "Press any key to continue...");
-    wnoutrefresh(more_coinfo);
-    doupdate();
-    getch();
-    delwin(more_coinfo);
-    touchwin(mapwin);
-    touchwin(general);
-    touchwin(coinfo);
-    wnoutrefresh(mapwin);
-    wnoutrefresh(general);
-    wnoutrefresh(coinfo);
 }
 
 /**
